@@ -10,6 +10,7 @@ export default function Index() {
 
   const Drawer = createDrawerNavigator()
 
+  // import user from context
   const { user } = useContext(MainContext)
 
   return (
