@@ -5,7 +5,7 @@ export default function App() {
 
   return (
     <MainContextProvider>
-      <Index />
+      <Index /* Provide Index so that Index can import from context */ />
     </MainContextProvider>
   );
 }

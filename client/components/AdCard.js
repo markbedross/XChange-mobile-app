@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { MainContext } from "../contexts/MainContext";
 
-function AdCard({ id, ad, navigation }) {
+function AdCard({ userAd, ad, navigation }) {
 
   const { API, IMG, user, setUpdated } = useContext(MainContext); // import from context
 
@@ -23,62 +23,57 @@ function AdCard({ id, ad, navigation }) {
     ]);
   };
 
-  const deleteAd = async () => {
-    if (id) {
-      // checking to make sure you're editing an already existing ad first
-      fetch(`${API}/ad/delete/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer: ${user.token}`,
-        },
-      }).catch((err) => console.log(err));
-      setUpdated((prev) => !prev);
-    }
+  const deleteAd = async () => { // function to delete an Ad
+    fetch(`${API}/ad/delete/${ad._id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer: ${user.token}`,
+      },
+    }).catch((err) => console.log(err));
+    setUpdated((prev) => !prev);
   };
 
   return (
     <TouchableNativeFeedback
       onPress={() => {
-        if (id) navigation.navigate("UpdateAd", {id}); // if id exists, go to "UpdateAd" page, and pass id as param
+        if (userAd) navigation.navigate("UpdateAd", { ad }); // if this is a userAd, go to "UpdateAd" page, and pass ad as param
         else navigation.navigate("Ad", { ad }); // else go to regular Ad page, and pass ad as param
       }}
       onLongPress={() => {
-        if (id) deleteAlert();
-      }} // on long press, opens Alert asking to delete ad, after checking if ID exists
+        if (userAd) deleteAlert();
+      }} // on long press, opens Alert asking to delete ad, after checking if this is a userAd
     >
-      {ad && (
-        <View style={styles.container}>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "lightgrey",
-              borderRadius: 8,
-            }} /* lightgrey background used for no image */
-          >
-            <Image
-              source={{
-                uri: hasPhotos
-                  ? `${IMG}/${ad.photos[0]}`
-                  : `${IMG}/no-image.jpg`, // code for placeholder image
-              }}
-              style={[styles.image, { opacity: hasPhotos ? 1 : 0.4 }]} // if placeholder, set opacity to 0.4
-            />
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }} // Location and price container
-          >
-            <Text style={styles.location}>{ad.location}</Text>
-            <Text style={styles.price}>${ad.price}</Text>
-          </View>
-          <Text numberOfLines={1} style={styles.title}>
-            {ad.title}
-          </Text>
+      <View style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "lightgrey",
+            borderRadius: 8,
+          }} /* lightgrey background used for no image */
+        >
+          <Image
+            source={{
+              uri: hasPhotos
+                ? `${IMG}/${ad.photos[0]}`
+                : `${IMG}/no-image.jpg`, // code for placeholder image
+            }}
+            style={[styles.image, { opacity: hasPhotos ? 1 : 0.4 }]} // if placeholder, set opacity to 0.4
+          />
         </View>
-      )}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }} // Location and price container
+        >
+          <Text style={styles.location}>{ad.location}</Text>
+          <Text style={styles.price}>${ad.price}</Text>
+        </View>
+        <Text numberOfLines={1} style={styles.title}>
+          {ad.title}
+        </Text>
+      </View>
     </TouchableNativeFeedback>
   );
 }

@@ -18,61 +18,41 @@ import * as ImagePicker from "expo-image-picker";
 function CreateAd({ route, navigation }) {
 
   const { API, user, theme, setUpdated, IMG } = useContext(MainContext);
-  const { id } = route.params;
+  const { ad } = route.params; // if making a new ad, this will be null
 
+  // fields for the ad
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [photos, setPhotos] = useState([]);
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  // error state
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const getAdId = async () => {
-      if (id) {
-        const res = await fetch(`${API}/ad/createAd/${id}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer: ${user.token}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          console.log(data.error);
-        } else {
-          setTitle(data.title);
-          setLocation(data.location);
-          setPhotos(data.photos);
-          setDescription(data.description);
-          setPrice(data.price);
-        }
-      } else {
-        setTitle("");
-        setLocation("");
-        setPhotos([]);
-        setDescription("");
-        setPrice("");
-      }
-    };
-
-    getAdId();
+    if (ad) { // if ad is not null, fill the fields
+      setTitle(ad.title);
+      setLocation(ad.location);
+      setPhotos(ad.photos);
+      setDescription(ad.description);
+      setPrice(ad.price);
+    }
   }, []);
 
-  const uploadPhoto = async () => {
+  const uploadPhoto = async () => { // function to upload images to database
     try {
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+      await ImagePicker.requestMediaLibraryPermissionsAsync(); // gets permissions
 
-      let files = await ImagePicker.launchImageLibraryAsync({
+      let files = await ImagePicker.launchImageLibraryAsync({ // opens gallery
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 1,
         allowsMultipleSelection: true,
       });
 
-      if (!files.canceled) {
+      if (!files.canceled) { // if user hasn't cancelled
         const filelist = new FormData();
-        for (let i = 0; i < files.assets.length; i++) {
+
+        for (let i = 0; i < files.assets.length; i++) { // for each photo user uploaded, add to filelist
           filelist.append("photos", {
             name: files.assets[i].uri,
             uri: files.assets[i].uri,
@@ -80,7 +60,7 @@ function CreateAd({ route, navigation }) {
           });
         }
 
-        const res = await fetch(`${API}/ad/upload`, {
+        const res = await fetch(`${API}/ad/upload`, { // post photos to api
           method: "POST",
           headers: {
             "Content-type": "multipart/form-data",
@@ -91,15 +71,16 @@ function CreateAd({ route, navigation }) {
 
         const data = await res.json();
 
-        setPhotos((prev) => [...prev, ...data]);
+        setPhotos((prev) => [...prev, ...data]); // update photos state
       }
     } catch (err) {
       console.log("err", err);
     }
   };
 
-  const createAd = async () => {
-    const ad = {
+  const saveAd = async () => { // function to post the ad
+
+    const adData = { // object for ad data to be sent to server
       title,
       location,
       photos,
@@ -107,27 +88,28 @@ function CreateAd({ route, navigation }) {
       price,
     };
 
-    let res;
+    let res; // declare response object so if or else can set it
 
-    if (id) {
-      // if updating an existing ad
-      res = await fetch(`${API}/ad/createAd/${id}`, {
+    if (ad) { // if updating an existing ad
+
+      const id = ad._id // need to store id into own variable because can't use dot notation in stringify
+
+      res = await fetch(`${API}/ad/createAd/${id}`, { // put request to server
         method: "PUT",
         headers: {
           Authorization: `Bearer: ${user.token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, ...ad }),
+        body: JSON.stringify({ id, ...adData }),
       });
-    } else {
-      // if posting a new ad
-      res = await fetch(`${API}/ad/createAd`, {
+    } else { // if posting a new ad
+      res = await fetch(`${API}/ad/createAd`, { // post new ad to server
         method: "POST",
         headers: {
           Authorization: `Bearer: ${user.token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(ad),
+        body: JSON.stringify(adData),
       });
     }
 
@@ -139,27 +121,27 @@ function CreateAd({ route, navigation }) {
       Keyboard.dismiss(); // closes keyboard
     } else {
       navigation.goBack();
-      ToastAndroid.show("Ad uploaded", ToastAndroid.LONG);
-      setUpdated((prev) => !prev);
+      ToastAndroid.show("Ad saved", ToastAndroid.LONG);
+      setUpdated((prev) => !prev); // change update to update Home and Profile screen to reflect ad change
     }
   };
 
-  const deletePhoto = (link) => {
+  const deletePhoto = (link) => { // function to delete a picture
     // removes the pic
     setPhotos((prev) => prev.filter((photo) => photo !== link));
   };
 
-  const selectMainPic = (link) => {
+  const selectMainPic = (link) => { // function to select the Thumbnail pic
     // puts the selected pic as the first in the array
     setPhotos([link, ...photos.filter((photo) => photo !== link)]);
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView style={{ flex: 1, gap: 10, marginBottom: 10 }}>
+      <ScrollView style={{ flex: 1 }}>
         <View style={styles.inputContainer}>
           <Text style={styles.inputTitle}>Title</Text>
-          <TextInput
+          <TextInput // title text input
             style={styles.input}
             placeholder="Title"
             onChangeText={(t) => setTitle(t)}
@@ -169,7 +151,7 @@ function CreateAd({ route, navigation }) {
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.inputTitle}>Location</Text>
-          <TextInput
+          <TextInput // location text input
             style={styles.input}
             placeholder="Location"
             onChangeText={(t) => setLocation(t)}
@@ -179,7 +161,7 @@ function CreateAd({ route, navigation }) {
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.inputTitle}>Description</Text>
-          <TextInput
+          <TextInput // description text input
             style={[styles.input, { textAlignVertical: "top" }]}
             multiline={true}
             numberOfLines={6}
@@ -191,7 +173,7 @@ function CreateAd({ route, navigation }) {
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.inputTitle}>Price</Text>
-          <TextInput
+          <TextInput // price text input
             style={styles.input}
             placeholder="Price"
             onChangeText={(t) => setPrice(t)}
@@ -200,17 +182,18 @@ function CreateAd({ route, navigation }) {
           </TextInput>
         </View>
         <View style={[styles.inputContainer, { width: "30%" }]}>
+          {/* Label and button for uploading images */}
           <Text style={styles.inputTitle}>Pictures</Text>
           <Button color={theme} title="Upload" onPress={() => uploadPhoto()} />
         </View>
         <View style={styles.imagesContainer}>
-          {photos.length > 0 &&
+          {photos.length > 0 && // once images exist, loop through and display them
             photos.map((item, index) => {
               return (
                 <Pressable
                   key={item+index}
-                  onPress={() => selectMainPic(item)}
-                  onLongPress={() => {
+                  onPress={() => selectMainPic(item)} // press to set as Main pic
+                  onLongPress={() => { // long press to remove the image
                     Alert.alert(
                       "Attention",
                       "Would you like to remove this image?",
@@ -226,7 +209,7 @@ function CreateAd({ route, navigation }) {
                       styles.images,
                       {
                         borderColor: "yellow",
-                        borderWidth: index === 0 ? 5 : 0,
+                        borderWidth: index === 0 ? 5 : 0, // only the Main image will have border
                       },
                     ]}
                     src={`${IMG}/${item}`}
@@ -235,13 +218,13 @@ function CreateAd({ route, navigation }) {
               );
             })}
         </View>
-        {error && (
+        {error && ( // error box
           <View style={styles.error}>
             <Text>{error}</Text>
           </View>
         )}
       </ScrollView>
-      <Button color={theme} title="Save ad" onPress={() => createAd()} />
+      <Button color={theme} title="Save ad" onPress={() => saveAd()} />
     </View>
   );
 }
@@ -256,6 +239,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     gap: 5,
+    marginBottom: 14
   },
   inputTitle: {
     fontWeight: "bold",

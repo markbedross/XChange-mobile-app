@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { MainContext } from '../contexts/MainContext';
 import { TextInput } from 'react-native-gesture-handler';
@@ -6,20 +6,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function Login({navigation}) {
 
+  // login / register fields
     const [name, setName] = useState("")
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    // state for error
     const [error, setError] = useState("");
 
-    const [page, setPage] = useState("login")
+    // state to know whether to show login screen or register screen
+    const [loggingIn, setLoggingIn] = useState(true)
     
+    // import from context
     const {API, user, setUser, theme} = useContext(MainContext)
 
-    const login = async () => {
+    const login = async () => { // function to log user in
 
         setError(null)
     
-        const res = await fetch(`${API}/user/login`, {
+        const res = await fetch(`${API}/user/login`, { // post user to server
           method: "POST",
           headers: {
             'Content-Type': 'application/json'
@@ -36,16 +40,17 @@ function Login({navigation}) {
           console.log("res not ok: " + data.error)
           setError(data.error)
         } else {
-          await AsyncStorage.setItem('user', JSON.stringify(data))
+          await AsyncStorage.setItem('user', JSON.stringify(data)) // if res ok, save user to storage
           setUser(data)
+          navigation.navigate("Home") // once logged in, navigate to home screen
         }
       };
 
-    const register = async () => {
+    const register = async () => { // function to register user
   
       setError(null);
   
-      const res = await fetch(`${API}/user/register`, {
+      const res = await fetch(`${API}/user/register`, { // post user to server
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,39 +68,42 @@ function Login({navigation}) {
         console.log("res not ok: " + data.error);
         setError(data.error);
       } else {
-        AsyncStorage.setItem("user", JSON.stringify(data));
+        await AsyncStorage.setItem("user", JSON.stringify(data)); // if res ok, save user to storage, automatically logging them in
         setUser(data);
+        navigation.navigate("Home") // after registering, navigate to home
       }
     };
-    
-      useEffect(()=>{
-        if (user) navigation.navigate("Home")
-      }, [user])
 
     return (
         <View style={{flex: 1}}>
-            {page === "login" ? 
+            {loggingIn ? // if user wants to log in
             <View style={styles.container}>
               <TextInput style={styles.input} placeholder='Email' onChangeText={(t)=>setEmail(t)}/>
               <TextInput style={styles.input} secureTextEntry={true} placeholder='Password' onChangeText={(t)=>setPassword(t)}/>
               {error && <Text style={styles.error}>{error}</Text>}
               <Button title="Log in" color={theme} onPress={login}/>
-              <Text style={{alignSelf: 'center'}}>Not a member yet? <Text onPress={()=>{
-                setPage("register")
+              <Text style={{alignSelf: 'center'}}>Not a member yet?
+                <Text onPress={()=>{
+                setLoggingIn(false) // change to Register view if click
                 setError(null)
-              }} style={{color: theme}}>Register</Text></Text>
+                }} style={{color: theme}}>Register
+                </Text>
+              </Text>
             </View>
-            :
+            : // if user wants to register
             <View style={styles.container}>
               <TextInput style={styles.input} placeholder='Name' onChangeText={(t)=>setName(t)}/>
               <TextInput style={styles.input} placeholder='Email' onChangeText={(t)=>setEmail(t)}/>
               <TextInput style={styles.input} secureTextEntry={true} placeholder='Password' onChangeText={(t)=>setPassword(t)}/>
               {error && <Text style={styles.error}>{error}</Text>}
               <Button title="Register" color={theme} onPress={register}/>
-              <Text style={{alignSelf: 'center'}}>Already a member? <Text onPress={()=>{
-                setPage("login")
-                setError(null)
-              }} style={{color: theme}}>Login</Text></Text>
+              <Text style={{alignSelf: 'center'}}>Already a member?
+                <Text onPress={()=>{
+                  setLoggingIn(true) // change back to Login view if click
+                  setError(null)
+                  }} style={{color: theme}}>Login
+                </Text>
+              </Text>
             </View>}
         </View>
     );
@@ -127,40 +135,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         justifyContent: 'center',
         fontSize: 16,
-        // borderColor: 'red';
-        // borderWidth: 1px;
-        // border-style: solid;
         borderRadius: 8
     }
 })
-
-function LoginPage(props) {
-
-  return (
-    <div className="login-container">
-      <h2>Login</h2>
-      <form className="login-form" onSubmit={e => login(e)}>
-        <input className="loginInput"
-          type="text"
-          placeholder="your@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input className="loginInput"
-          type="password"
-          placeholder="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button className="loginButton">Login</button>
-        {error && <div className="login-error">{error}</div> }
-        <div style={{ color: "grey", fontSize: 14 }}>
-          Don't have an account yet?&nbsp;
-          <Link to={"/register"} style={{ color: "#f5385d" }}>
-            Register
-          </Link>
-        </div>
-      </form>
-    </div>
-  );
-}

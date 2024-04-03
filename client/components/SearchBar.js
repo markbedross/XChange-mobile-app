@@ -5,29 +5,36 @@ import { MainContext } from "../contexts/MainContext";
 
 function SearchBar({ setEndpoint }) {
 
-    const {theme, setUpdated} = useContext(MainContext)
-    const [text, setText] = useState("")
+  // import from context
+  const { theme, setUpdated } = useContext(MainContext);
+  
+  // state for setting endpoint on button press
+  const [text, setText] = useState("");
 
   return (
     <View style={styles.textbox}>
-        <View style={{flexDirection: 'row', flex: 1}}>
-        <View style={{alignSelf: 'center'}}>
-            {/* maginfying glass icon */}
-            <MaterialIcons name="search" color={"black"} size={25} />
+      <View style={{ flexDirection: "row", flex: 1 }}>
+        <View style={{ alignSelf: "center" }}>
+          {/* maginfying glass icon */}
+          <MaterialIcons name="search" color={"black"} size={25} />
         </View>
-            {/* text field */}
-            <TextInput
-            placeholder="Search"
-            style={styles.text}
-            onChangeText={(text) =>setText(text)}
+        {/* text field */}
+        <TextInput
+          placeholder="Search"
+          style={styles.text}
+          onChangeText={(text) => setText(text)}
         />
-        </View>
-        <View>
-            <Button color={theme} title="Search" onPress={()=>{
-              setEndpoint(text)
-              setUpdated(prev=>!prev)
-              }} />
-        </View>
+      </View>
+      <View>
+        <Button
+          color={theme}
+          title="Search"
+          onPress={() => {
+            setEndpoint(text); // sets endpoint on button press
+            setUpdated((prev) => !prev); // change update to update home screen
+          }}
+        />
+      </View>
     </View>
   );
 }
@@ -42,13 +49,13 @@ const styles = StyleSheet.create({
     borderColor: "#00000030", // black border with 30% opacity
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: 'space-between',
-    backgroundColor: 'white',
+    justifyContent: "space-between",
+    backgroundColor: "white",
   },
   text: {
     paddingLeft: 5,
     paddingVertical: 10,
-    flex: 1
+    flex: 1,
   },
 });
 

@@ -16,6 +16,7 @@ export default function Index() {
     <NavigationContainer>
         <Drawer.Navigator>
             <Drawer.Screen name="Home" component={Home}/>
+            {/* if user is logged in, displays Profile, otherwise displays Login */}
             <Drawer.Screen name={user ? "Profile" : "Login"} component={user ? Profile : Login} />
         </Drawer.Navigator>
     </NavigationContainer>

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -10,6 +10,7 @@ import {
 import { MainContext } from "../contexts/MainContext";
 
 function Ad({ route }) {
+
   const { IMG } = useContext(MainContext); // import setScreen function and IMG const
 
   const { ad } = route.params; //destructure ad from params

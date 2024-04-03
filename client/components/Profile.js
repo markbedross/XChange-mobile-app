@@ -1,26 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useContext, useEffect, useState } from "react";
-import {
-  Button,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  ToastAndroid,
-  View,
-} from "react-native";
+import { Button, View } from "react-native";
 import { MainContext } from "../contexts/MainContext";
-import { TextInput } from "react-native-gesture-handler";
-import axios from "axios";
 import NameAndEmail from "./NameAndEmail";
-import OptionsAndPosts from "./OptionsAndPosts";
+import UserPosts from "./UserPosts";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import CreateAd from "./CreateAd";
-import * as Progress from 'react-native-progress'
+import * as Progress from "react-native-progress";
 
 function Profile({ navigation }) {
+
+  // import from context
   const { setUser, theme, updated, API, user } = useContext(MainContext);
 
+  // state for user's ads
   const [userAds, setUserAds] = useState();
 
   const Stack = createNativeStackNavigator();
@@ -28,7 +21,7 @@ function Profile({ navigation }) {
   useEffect(() => {
     setUserAds();
     const getUserAds = async () => {
-      const res = await fetch(`${API}/user/ads`, {
+      const res = await fetch(`${API}/user/ads`, { // fetch user ads from server
         headers: {
           Authorization: `Bearer: ${user.token}`,
         },
@@ -41,9 +34,9 @@ function Profile({ navigation }) {
 
   const Screen = () => (
     <View style={{ flex: 1 }}>
-      {userAds ? (
+      {userAds ? ( // ternary operator for circle snail while loading
         <View style={{ flex: 1 }}>
-          <OptionsAndPosts userAds={userAds} navigation={navigation} />
+          <UserPosts userAds={userAds} navigation={navigation} />
           <Button
             color={theme}
             title="Logout"
@@ -54,7 +47,7 @@ function Profile({ navigation }) {
             }}
           />
         </View>
-      ) : (
+      ) : ( // circle snail
         <View style={{ flex: 1 }}>
           <Progress.CircleSnail
             color={theme}
@@ -69,13 +62,13 @@ function Profile({ navigation }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        options={{ headerShown: false }}
+        options={{ headerShown: false }} // don't show stack header on this screen
         name="ProfileScreen"
         component={Screen}
       />
       <Stack.Screen
         options={{ title: "Back" }}
-        name="NameAndEmails"
+        name="NameAndEmail"
         component={NameAndEmail}
       />
       <Stack.Screen
@@ -88,5 +81,3 @@ function Profile({ navigation }) {
 }
 
 export default Profile;
-
-const styles = StyleSheet.create({});
