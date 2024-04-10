@@ -82,7 +82,7 @@ function Login({navigation}) {
               <TextInput style={styles.input} secureTextEntry={true} placeholder='Password' onChangeText={(t)=>setPassword(t)}/>
               {error && <Text style={styles.error}>{error}</Text>}
               <Button title="Log in" color={theme} onPress={login}/>
-              <Text style={{alignSelf: 'center'}}>Not a member yet?
+              <Text style={{alignSelf: 'center'}}>Not a member yet?&nbsp;
                 <Text onPress={()=>{
                 setLoggingIn(false) // change to Register view if click
                 setError(null)
@@ -97,7 +97,7 @@ function Login({navigation}) {
               <TextInput style={styles.input} secureTextEntry={true} placeholder='Password' onChangeText={(t)=>setPassword(t)}/>
               {error && <Text style={styles.error}>{error}</Text>}
               <Button title="Register" color={theme} onPress={register}/>
-              <Text style={{alignSelf: 'center'}}>Already a member?
+              <Text style={{alignSelf: 'center'}}>Already a member?&nbsp;
                 <Text onPress={()=>{
                   setLoggingIn(true) // change back to Login view if click
                   setError(null)
