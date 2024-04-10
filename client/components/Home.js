@@ -7,14 +7,19 @@ import Ad from "./Ad";
 import CreateAd from "./CreateAd";
 import SearchBar from "./SearchBar";
 import * as Progress from 'react-native-progress'
+import Splash from './Splash'
+import { LogBox } from "react-native";
 
-function Home({ navigation }) {
+LogBox.ignoreAllLogs() // ignores logs
+
+function Home({ navigation, route }) {
 
   const Stack = createNativeStackNavigator();
 
   const { API, user, theme, updated } = useContext(MainContext); // import from context
   const [ads, setAds] = useState(); // state for ads data
   const [endpoint, setEndpoint] = useState(""); // endpoint for searching
+  const [splash, setSplash] = useState(true) // variable for showing splash screen or not, default to show
 
   useEffect(() => {
     setAds();
@@ -23,6 +28,12 @@ function Home({ navigation }) {
         const response = await fetch(`${API}/ad/ads/${endpoint}`); // get ads from server
         const data = await response.json();
         setAds(data);
+        setTimeout(()=>{
+          // after ads load, wait 1 second, then set splash screen to false and drawer header to true
+          // this ensures splash screen lasts at-least 1 second
+          route.params.setShowHeader(true)
+          setSplash(false)
+        }, 1000)
       } catch (err) {
         console.log(err);
       }
@@ -30,7 +41,7 @@ function Home({ navigation }) {
     fetchData();
   }, [updated]);
 
-  const renderAds = ({ item }) => <AdCard ad={item} navigation={navigation} />; //render ad function for flatlist
+  const renderAds = ({ item }) => <AdCard ad={item} navigation={navigation} /> //render ad function for flatlist
 
   const Screen = () => (
     <View style={{flex: 1}}>
@@ -70,7 +81,7 @@ function Home({ navigation }) {
       <Stack.Screen
         options={{ headerShown: false }} // header not shown on home screen
         name="HomeScreen"
-        component={Screen}
+        component={splash ? Splash : Screen} // show / hide splash screen based on variable
       />
       <Stack.Screen options={{ title: "Back" }} name="Ad" component={Ad} />
       <Stack.Screen
